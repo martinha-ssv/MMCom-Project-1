@@ -1,6 +1,8 @@
 import sys
 import os
-# fix import
+from node import *
+import numpy as np
+# TODO: fix import below ######################################
 import fem_geometry as f_geom
 
 class Element():
@@ -8,17 +10,8 @@ class Element():
         self.node_start = node_start
         self.node_end = node_end
         self.id = id
-        
-    def get_node_start(self):
-        return self.node_start 
     
-    def get_node_end(self):
-        return self.node_end
-    
-    def get_id(self):
-        return self.id
-    
-    def get_length(self):
-        return f_geom.get_distance(self.get_node_start.get_x(), self.get_node_start.get_y(), self.get_node_end.get_x(), self.get_node_end.get_y())
+    def length(self):
+        return f_geom.get_distance(self.node_start, self.node_end)
     
     

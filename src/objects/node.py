@@ -3,11 +3,8 @@ class Node():
         self.coordinates = coordinates
         self.id = id
 
-    def get_x(self):
+    def x(self):
         return self.coordinates[0]
 
-    def get_y(self):
+    def y(self):
         return self.coordinates[1]
-
-    def get_id(self):
-        return self.id
