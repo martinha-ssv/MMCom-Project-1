@@ -2,6 +2,7 @@ from src.modules import parser
 from src.modules import file_input
 from src.objects.node import Node
 from src.objects.element import Element
+from src.modules import draw
 from pprint import pprint
 
 def test_getHeading():
@@ -25,21 +26,44 @@ def test_getHeading_all(file):
 
 # print(parser.parseNodeSetContent(['nset=Set-6','instance=Part-1-1','2']))
 
-def test_getNsets(file):
+def test_getNsets(file, out=False):
     input_file = file_input.InputFile(file)
     pprint(input_file.headings_content)
     input_file.getNodes()
-    pprint(Node.nodes)
     input_file.getNsets()
-    pprint(Node.Nsets)
     input_file.getElements()
-    pprint(Element.elements)
     input_file.getSection()
     input_file.getMaterial()
-    print(Element.elements[1].Ke())
+    input_file.getCLoads()
+    input_file.getBCs()
+    Element.getAllKes()
+    print("NODES ######################################")
+    pprint(Node.nodes)
+    print("NSETS ######################################")
+    pprint(Element.elements)
+    for test_element in Element.elements.values(): print(test_element.Ke ,'\n')
+
+    if out:
+        with open(out, 'w') as output_file:
+            output_file.write("NODES ######################################\n")
+            pprint(Node.nodes, stream=output_file)
+            output_file.write("ELEMENTS ######################################\n")
+            pprint(Element.elements, stream=output_file)
+            output_file.write("MATRICES ######################################\n")
+            for test_element in Element.elements.values():
+                output_file.write("E"+str(test_element.id) + '\n')
+                output_file.write(str(test_element.Ke) + '\n\n')
+            output_file.write("NODE BOUNDARY CONDITIONS\n")
+            for node in Node.nodes.values():
+                output_file.write("N" + str(node.id) + '\n')
+                output_file.write(str([bool(BC) for BC in node.BCs])+'\n\n')
+
+                
+
+    draw.draw()
 
 
 
-test_getNsets('work1_input_file.txt')
+test_getNsets('work1_input_file.txt', 'output_withbcs.txt')
 
 #pprint(input_file.headings_content)

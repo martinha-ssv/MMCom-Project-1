@@ -8,7 +8,7 @@ class InputFile():
         self.full_text = ''
         with open(file) as f:
             self.full_text = f.readlines()
-            # TODO: purge comments
+            self.full_text = [line for line in self.full_text if (not parser.isComment(line))] # WARNING: If we need to implement loads which aren't concentrated forces, we might need some comments (unsure, have to check Abaqus Docs).
             self.headings_content = self.contentParse()
 
     def contentParse(self):
@@ -89,14 +89,28 @@ class InputFile():
             Node.Nsets[name] = nodes
     
     def getCLoads(self):
-        cloads_txt_list = [parser.parseCload(cload) for cload in self.headings_content['Cload']] # TODO: parser.parseCload()
+        cloads_txt_list = [parser.cleanLine(cload[0]) for cload in self.headings_content['Cload']]
         for cload_txt in cloads_txt_list:
             set = cload_txt[0]
             for node in Node.Nsets[set]:
-                axis = int(cload_txt[1])
+                axis = parser.RealToPy_ind(int(cload_txt[1]))
                 magnitude = float(cload_txt[2])
 
-                node.loads[axis] = magnitude # TODO: node.loads[axis] dictionary
+                node.loads[axis] = magnitude
+
+    def getBCs(self):
+        BCs_txt_list = [BC for BC in self.headings_content['Boundary']]
+        BCs_txt_list = [item for sublist in BCs_txt_list for item in sublist] 
+        BCs_txt_list = [parser.cleanLine(BC) for BC in BCs_txt_list]
+        for BC_txt in BCs_txt_list:
+            set = BC_txt[0]
+            for node in Node.Nsets[set]:
+                    for axis in range(int(BC_txt[1]), int(BC_txt[2])+1):
+                        i = parser.RealToPy_ind(axis)
+                        if len(BC_txt) == 4:
+                            node.BCs[i] = float(BC_txt[3])
+                        else:
+                            node.BCs[i] = 0
 
     def getMaterialText(self):
         content = parser.cleanLine(self.headings_content['Elastic'][0][0])

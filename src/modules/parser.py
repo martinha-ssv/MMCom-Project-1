@@ -1,6 +1,12 @@
 def cleanLine(line):
     return [word.strip(' ') for word in line.strip('\n').split(',')]
 
+def RealToPy_ind(index):
+    return index - 1
+
+def PyToReal_ind(index):
+    return index + 1
+
 def isComment(line):
     return line.startswith("**")
 
@@ -29,3 +35,4 @@ def parseNodeSetContent(Nset_content):
     else:
         nodes = [line.strip(',\n') for line in Nset_content[2:]]
     return name, nodes
+
