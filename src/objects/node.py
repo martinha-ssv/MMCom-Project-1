@@ -1,10 +1,21 @@
+import numpy as np
 class Node():
-    def __init__(self, coordinates, id):
-        self.coordinates = coordinates
-        self.id = id
+    nodes = {}
+    Nsets = {}
 
-    def x(self):
-        return self.coordinates[0]
+    def __init__(self, id, coordinates):
+        self.id = int(id)
+        self.coordinates = np.array(coordinates, dtype=float)
+        Node.nodes[self.id] = self
 
-    def y(self):
-        return self.coordinates[1]
+    
+    def getNodeById(id):
+        id = int(id)
+        if id in Node.nodes.keys():
+            return Node.nodes[id]
+        else:  
+            return None
+        
+    def __repr__(self):
+        coords = ', '.join([str(coord) for coord in self.coordinates])
+        return f'N{self.id}, ({coords})'
