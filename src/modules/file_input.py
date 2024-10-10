@@ -1,6 +1,6 @@
-from ..modules import parser
-from ..objects.node import Node
-from ..objects.element import Element
+from src.modules import parser
+from src.objects.node import Node
+from src.objects.element import Element
 import numpy as np
 
 class InputFile():
@@ -10,6 +10,14 @@ class InputFile():
             self.full_text = f.readlines()
             self.full_text = [line for line in self.full_text if (not parser.isComment(line))] # WARNING: If we need to implement loads which aren't concentrated forces, we might need some comments (unsure, have to check Abaqus Docs).
             self.headings_content = self.contentParse()
+            self.getNodes()
+            self.getNsets()
+            self.getElements()
+            self.getSection()
+            self.getMaterial()
+            self.getCLoads()
+            self.getBCs()
+
 
     def contentParse(self):
         '''
@@ -105,6 +113,7 @@ class InputFile():
         for BC_txt in BCs_txt_list:
             set = BC_txt[0]
             for node in Node.Nsets[set]:
+                    print('Lookinf at node:', node.id)
                     for axis in range(int(BC_txt[1]), int(BC_txt[2])+1):
                         i = parser.RealToPy_ind(axis)
                         if len(BC_txt) == 4:

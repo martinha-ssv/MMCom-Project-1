@@ -4,6 +4,7 @@ from src.objects.node import Node
 from src.objects.element import Element
 from src.modules import draw
 from pprint import pprint
+from datetime import datetime
 
 def test_getHeading():
     heading = parser.getHeading("*Heading")
@@ -26,7 +27,7 @@ def test_getHeading_all(file):
 
 # print(parser.parseNodeSetContent(['nset=Set-6','instance=Part-1-1','2']))
 
-def test_getNsets(file, out=False):
+def test_all(file, out=False):
     input_file = file_input.InputFile(file)
     pprint(input_file.headings_content)
     input_file.getNodes()
@@ -42,9 +43,12 @@ def test_getNsets(file, out=False):
     print("NSETS ######################################")
     pprint(Element.elements)
     for test_element in Element.elements.values(): print(test_element.Ke ,'\n')
+    
+    #draw.draw()
 
     if out:
         with open(out, 'w') as output_file:
+            output_file.write(f"File written at: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
             output_file.write("NODES ######################################\n")
             pprint(Node.nodes, stream=output_file)
             output_file.write("ELEMENTS ######################################\n")
@@ -56,14 +60,12 @@ def test_getNsets(file, out=False):
             output_file.write("NODE BOUNDARY CONDITIONS\n")
             for node in Node.nodes.values():
                 output_file.write("N" + str(node.id) + '\n')
-                output_file.write(str([bool(BC) for BC in node.BCs])+'\n\n')
-
-                
-
-    draw.draw()
+                output_file.write(str(node.BCs)+'\n\n')
+            
+    
 
 
 
-test_getNsets('work1_input_file.txt', 'output_withbcs.txt')
+test_all('work1_input_file.txt', 'output_withbcs.txt')
 
 #pprint(input_file.headings_content)
