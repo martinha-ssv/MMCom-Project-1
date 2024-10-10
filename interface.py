@@ -5,7 +5,7 @@ import tempfile
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 import numpy as np
-from solver import *
+from solver import InputFile, buildGlobalK, constrainGlobalK, solve_disp, solveForces
 
 # Create the main window (root)
 root = tk.Tk()

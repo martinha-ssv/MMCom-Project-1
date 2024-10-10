@@ -2,6 +2,7 @@ import numpy as np
 from math import cos as c, sin as s
 from .node import Node
 from ..modules import fem_geometry as f_geom
+import matplotlib.pyplot as plt
 
 class Element():
     elements = {}
@@ -30,9 +31,6 @@ class Element():
         self.Ke = np.zeros((4, 4))
 
     
-    def h_e(self):
-        return f_geom.get_distance(self.nodes[1], self.nodes[2])
-    
     def __repr__(self):
         return f'E{self.id:<5} N{self.nodes[1].id:<5} --> N{self.nodes[2].id:<5} h_e = {self.h_e():.3f}'
     
@@ -47,6 +45,10 @@ class Element():
 
         return self.Ke
     
+    def h_e(self):
+        '''Returns the length of the element.'''
+        return f_geom.get_distance(self.nodes[1], self.nodes[2])
+    
     def interpolation_weights(self, x):
         '''Interpolates the displacement vector for a given x.'''
         N1 = 1 - x/self.h_e()
@@ -55,9 +57,37 @@ class Element():
 
     def interpolate_u(self, no_intervals=100):
         '''Interpolates the displacement vector for a given x.'''
-        points = np.linspace(0, self.h_e(), no_intervals)
-        uu = np.array([self.nodes[1].u1u2, self.nodes[2].u1u2])
-        us = np.array([uu.T @ self.interpolation_weights(point) for point in points])
-        xs = np.array([point*c(self.theta) for point in points])
-        ys = np.array([point*s(self.theta) for point in points])
-        return us, xs, ys
+        coordinates_start = self.nodes[1].coordinates
+        coordinates_end = self.nodes[2].coordinates
+        points = np.linspace(coordinates_start, coordinates_end, no_intervals)
+        uu = np.array([self.nodes[1].u1u2, self.nodes[2].u1u2]) #TODO: ver se o 0 fica exatamente u1
+        us = np.array([uu.T @ self.interpolation_weights(i) for i in range(len(points))])
+        xs = np.array(points[:, 0])
+        ys = np.array(points[:, 1])
+        return us, points
+    
+    #TODO implement projectInElementDirection
+    #TODO implement getStrain
+    #TODO implement getStress
+    def projectInElementDirection(self, u):
+        '''Projects a vector in the element direction.'''
+        element_vector = self.nodes[2].coordinates - self.nodes[1].coordinates
+        element_direction = element_vector / np.linalg.norm(element_vector)
+        return u @ element_direction
+    
+    def projectInXYDirection(self, magnitude):
+        '''Projects a vector that is in the element's direction to the XY direction, given its magnitude.'''
+        element_vector = self.nodes[2].coordinates - self.nodes[1].coordinates
+        element_direction = element_vector / np.linalg.norm(element_vector)
+
+
+    def getStrain(self):
+        '''Calculates the strain in the element.'''
+        du = self.projectInElementDirection(self.nodes[2].u1u2-self.nodes[1].u1u2)
+        self.strain = du / self.h_e()
+        return self.strain
+    
+    def getStress(self):
+        '''Calculates the stress in the element.'''
+        self.stress = Element.E_young * self.getStrain()
+        return self.stress
