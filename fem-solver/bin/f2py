@@ -1,5 +1,5 @@
 #!/bin/sh
-'''exec' "/Users/martavasconcelos/Documents/Universidade/3º Ano/1º Semestre/MMCom/Projetos/projeto1/fem-solver/bin/python3.12" "$0" "$@"
+'''exec' "/Users/martavasconcelos/Documents/Universidade/3º Ano/1º Semestre/MMCom/Projetos/projeto1/fem-solver/bin/python3.13" "$0" "$@"
 ' '''
 # -*- coding: utf-8 -*-
 import re
