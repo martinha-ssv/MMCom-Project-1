@@ -31,7 +31,8 @@ def buildGlobalK():
         return K_global
 
 def constrainGlobalK(K):
-    K_global_constrained = copy.copy(K)
+    K_global_constrained = copy.copy(K) #FIXME
+    #K_global_constrained = K
     force_vec = Node.nodesToVec('loads')
 
     for node in Node.nodes.values():
@@ -59,18 +60,18 @@ def eliminateUnknown(K, ind):
     K[ind, ind] = 1
           
 
-'''
+
 input = InputFile('work1_input_file.txt')
 k = buildGlobalK()
 const_k, f_vec = constrainGlobalK(k)
 uuu = solve_disp(const_k, f_vec)
 fff = solveForces(k,uuu)
-
+print(Node.nodesToVec('loads'))
 fig, ax = plt.subplots()
-draw.draw_structure(ax, plot=False, drawForces=False, drawConstraints=False)
+#draw.draw_structure(ax, plot=False, drawForces=False, drawConstraints=False)
 Node.ToggleDeformation(scale=1000000)
-draw.draw_structure(ax, drawForces=False, drawConstraints=False)
+draw.draw_structure(ax, drawForces=True, drawConstraints=False)
 
 
-test_all('work1_input_file.txt', 'results_test.txt')
-np.savetxt('test_output.txt', buildGlobalK(), fmt='%13.3e')'''
+#test_all('work1_input_file.txt', 'results_test.txt')
+#np.savetxt('test_output.txt', buildGlobalK(), fmt='%13.3e')

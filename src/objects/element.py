@@ -46,8 +46,18 @@ class Element():
         self.Ke = (Element.E_young * Element.A_section / self.h_e()) * pre_block
 
         return self.Ke
-
     
+    def interpolation_weights(self, x):
+        '''Interpolates the displacement vector for a given x.'''
+        N1 = 1 - x/self.h_e()
+        N2 = x/self.h_e()
+        return np.array([N1, N2])
 
-        
-    
+    def interpolate_u(self, no_intervals=100):
+        '''Interpolates the displacement vector for a given x.'''
+        points = np.linspace(0, self.h_e(), no_intervals)
+        uu = np.array([self.nodes[1].u1u2, self.nodes[2].u1u2])
+        us = np.array([uu.T @ self.interpolation_weights(point) for point in points])
+        xs = np.array([point*c(self.theta) for point in points])
+        ys = np.array([point*s(self.theta) for point in points])
+        return us, xs, ys
