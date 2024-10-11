@@ -1,12 +1,23 @@
 import numpy as np
-import matplotlib.pyplot as plts
-import src.modules.file_input as fi 
 import math as m
 
 
 class Node():
     nodes = {}
     Nsets = {}
+
+    def getMaxValues():
+        u1_lst = [node.u1u2[0] for node in Node.nodes.values()]
+        Node.u1max = max(u1_lst)
+        Node.u1min = min(u1_lst)
+
+        u2_lst = [node.u1u2[1] for node in Node.nodes.values()]
+        Node.u2max = max(u2_lst)
+        Node.u2min = min(u2_lst)
+
+        u_lst = [np.linalg.norm(node.u1u2) for node in Node.nodes.values()]
+        Node.umax = max(u_lst)
+
 
     def nodesToVec(property):
         return np.concatenate([getattr(Node.nodes[i], property) for i in Node.nodes.keys()])

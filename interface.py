@@ -1,11 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-import os
-import tempfile
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-import numpy as np
-from solver import InputFile, buildGlobalK, constrainGlobalK, solve_disp, solveForces
+
+from src.modules.GUIbuilder import *
+
 
 # Create the main window (root)
 root = tk.Tk()
@@ -26,40 +25,15 @@ frame_results = ttk.Frame(notebook, width=1000, height=400)
 frame_results.pack(fill="both", expand=True)
 notebook.add(frame_results, text="Results")
 
-# Function to open file dialog and load file content
-def open_file():
-    file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
-    if file_path:
-        with open(file_path, 'r') as file:
-            content = file.read()
-            text_box.delete(1.0, tk.END)  # Clear text box before loading new content
-            text_box.insert(tk.END, content)
-        messagebox.showinfo("File Loaded", f"Loaded file: {file_path}")
 
-
-# Function to save content to a temporary file and solve
-def run_and_create_temp_file():
-    content = text_box.get(1.0, tk.END)  # Get content from the text box
-    # Create a temporary file and write the content to it
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".txt")
-    temp_file.write(content.encode('utf-8'))
-    temp_file.close()
-    messagebox.showinfo("Temporary File Created", f"Temp file created at: {temp_file.name}")
-    fig.clear()  # Clear the figure for new plots
-    ax = fig.add_subplot(111)
-    
-    input = InputFile('work1_input_file.txt')
-    k = buildGlobalK()
-    const_k, f_vec = constrainGlobalK(k)
-    uuu = solve_disp(const_k, f_vec)
-    fff = solveForces(k,uuu)
-    canvas.draw()
-
-open_button = ttk.Button(frame_parameters, text="Open File", command=open_file)
+open_button = ttk.Button(frame_parameters, text="Open File", command=lambda: open_file(text_box=text_box))
 open_button.pack(pady=5)
 
-run_button = ttk.Button(frame_parameters, text="Run", command=run_and_create_temp_file)
+run_button = ttk.Button(frame_parameters, text="Run", command=lambda: run_and_create_temp_file(text_box=text_box, download_button=download_button))
 run_button.pack(pady=20)
+
+download_button = ttk.Button(frame_parameters, text="Download", state="disabled", command=download_results_file)
+download_button.pack(pady=5)
 
 
 # Screen 1 content (Parameters & Solving)

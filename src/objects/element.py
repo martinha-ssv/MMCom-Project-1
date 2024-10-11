@@ -2,13 +2,24 @@ import numpy as np
 from math import cos as c, sin as s
 from .node import Node
 from ..modules import fem_geometry as f_geom
-import matplotlib.pyplot as plt
+
 
 class Element():
     elements = {}
     A_section = 0
     E_young = 0
     v_poisson = 0
+
+    def getMaxValues():
+        '''Returns the maximum values for the strain and stress.'''
+        strains_lst = [element.getStrain() for element in Element.elements.values()]
+        Element.strainmax = max(strains_lst)
+        Element.strainmin = min(strains_lst)
+
+        stresses_lst = [element.getStress() for element in Element.elements.values()]
+        Element.stressmax = max(stresses_lst)
+        Element.stressmin = min(stresses_lst)
+
 
     def getElementById(id):
         id = int(id)
