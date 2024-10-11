@@ -1,6 +1,5 @@
 import numpy as np
 from math import cos as c, sin as s
-from objects.node import Node
 from modules import fem_geometry as f_geom
 
 
@@ -10,7 +9,13 @@ class Element():
     E_young = 0
     v_poisson = 0
 
-    def getMaxMinValues():
+    def avg_el_len():
+        '''Calculates the average element length.'''
+        if len(Element.elements) == 0:
+            return 0
+        return sum([el.h_e() for el in Element.elements.values()])/len(Element.elements)
+
+    def setMaxMinValues():
         '''Returns the maximum values for the strain and stress.'''
         strains_lst = [element.getStrain() for element in Element.elements.values()]
         Element.strainmax = max(strains_lst)
@@ -20,6 +25,15 @@ class Element():
         Element.stressmax = max(stresses_lst)
         Element.stressmin = min(stresses_lst)
 
+
+    def getMinMaxValues(attr):
+        '''Returns the maximum and minimum values for the given attribute.'''
+        if attr == 'strain':
+            return Element.strainmin, Element.strainmax
+        elif attr == 'stress':
+            return Element.stressmin, Element.stressmax
+        else:
+            return 0, 0
 
     def getElementById(id):
         id = int(id)

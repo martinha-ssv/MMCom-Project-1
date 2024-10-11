@@ -4,6 +4,8 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from results import Results
+import matplotlib.pyplot as plt
+from modules.file_input import clear_pycache
 
 # TODO add units textbox, also add to result writer
 
@@ -14,6 +16,7 @@ class Checkbox(ttk.Checkbutton):
         super().__init__(*args, **kwargs)
         self.variable = tk.BooleanVar(self)
         self.config(variable=self.variable)
+        self.check()
 
     def checked(self):
         return self.variable.get()
@@ -31,13 +34,13 @@ class Checkbox(ttk.Checkbutton):
 
 # Function to open file dialog and load file content
 def open_file(text_box):
-    file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]) #FIXME add to allow for .inp
+    clear_pycache()
+    file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("Input Files", "*.inp"), ("All Files", "*.*")])
     if file_path:
         with open(file_path, 'r') as file:
             content = file.read()
             text_box.delete(1.0, tk.END)  # Clear text box before loading new content
             text_box.insert(tk.END, content)
-        messagebox.showinfo("File Loaded", f"Loaded file: {file_path}")
 
 
 # Function to save content to a temporary file and solve
@@ -47,7 +50,6 @@ def run_and_create_temp_file(text_box, download_button):
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".txt")
     temp_file.write(content.encode('utf-8'))
     temp_file.close()
-    messagebox.showinfo("Temporary file with instructions was created", f"Temp file created at: {temp_file.name}")
     
     input = InputFile(temp_file.name)
     k = buildGlobalK()

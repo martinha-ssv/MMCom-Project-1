@@ -66,6 +66,6 @@ def test_all(file, out=False):
 
 
 
-test_all('work1_input_file.txt', 'output_withbcs.txt')
+#test_all('work1_input_file.txt', 'output_withbcs.txt')
 
 #pprint(input_file.headings_content)

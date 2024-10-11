@@ -2,6 +2,8 @@ from modules import parser
 from objects.node import Node
 from objects.element import Element
 import numpy as np
+import os
+import shutil
 
 class InputFile():
     def __init__(self, file: str) -> None:
@@ -105,6 +107,7 @@ class InputFile():
                 magnitude = float(cload_txt[2])
 
                 node.loads[axis] = magnitude
+                node.initialLoads[axis] = magnitude
 
     def getBCs(self):
         BCs_txt_list = [BC for BC in self.headings_content['Boundary']]
@@ -137,3 +140,13 @@ class InputFile():
         print(Element.E_young, Element.v_poisson)
 
     
+def clear_pycache(root_dir='.'):
+    """
+    Recursively find and remove __pycache__ directories starting from the root_dir.
+    """
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        # Look for __pycache__ directories
+        if '__pycache__' in dirnames:
+            pycache_path = os.path.join(dirpath, '__pycache__')
+            print(f"Removing {pycache_path}")
+            shutil.rmtree(pycache_path)

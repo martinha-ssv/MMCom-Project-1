@@ -15,7 +15,6 @@ from objects.node import Node
 from objects.element import Element
 from tabulate import tabulate
 
-
 class Results():
     '''Class to handle the results of the analysis.'''
     results_string = ''
@@ -30,11 +29,33 @@ class Results():
         print(f'Report written to {fname}')
 
 
-    def build_results_string(k):
+    def build_results_string(k, units=None):
         '''Builds the results string for the report.'''
         results = []
         results.append('FEA Analysis Results\n\n')
-        
+
+        # Nodes
+        results.append('Nodes\n')
+        nodes_table = [[node.id, node.coordinates[0], node.coordinates[1]] for node in Node.nodes.values()]
+        results.append(tabulate(nodes_table, headers=['Node', 'X', 'Y'], tablefmt='rounded_outline'))
+        results.append('\n\n')
+
+        # Elements
+        results.append('Elements\n')
+        elements_table = [[element.id, element.nodes[1].id, element.nodes[2].id] for element in Element.elements.values()]
+        results.append(tabulate(elements_table, headers=['Element', 'Node 1', 'Node 2'], tablefmt='rounded_outline'))
+        results.append('\n\n')
+
+        # Constraints
+        results.append('Constraints\n')
+        constraints_table = []
+        for node in Node.nodes.values():
+            for i, BC in enumerate(node.BCs):
+                if not np.isnan(BC):
+                    constraints_table.append([node.id, i+1, BC])
+        results.append(tabulate(constraints_table, headers=['Node', 'Axis', 'Constraint'], tablefmt='rounded_outline'))
+        results.append('\n\n')
+
         # Displacements
         results.append('Displacements\n')
         displacements_table = [[node.id, node.u1u2[0], node.u1u2[1], np.linalg.norm(node.u1u2)] for node in Node.nodes.values()]
@@ -65,7 +86,7 @@ class Results():
         for node in Node.nodes.values():
             for i, BC in enumerate(node.BCs):
                 if not np.isnan(BC):
-                    reactions_table.append([node.id, i, node.loads[i]])
+                    reactions_table.append([node.id, i+1, node.loads[i]])
         results.append(tabulate(reactions_table, headers=['Node', 'Axis', 'Reaction'], tablefmt='rounded_outline'))
         results.append('\n\n')
         

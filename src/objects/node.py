@@ -6,7 +6,8 @@ class Node():
     nodes = {}
     Nsets = {}
 
-    def getMaxMinValues():
+
+    def setMaxMinValues():
         u1_lst = [node.u1u2[0] for node in Node.nodes.values()]
         Node.u1max = max(u1_lst)
         Node.u1min = min(u1_lst)
@@ -19,6 +20,16 @@ class Node():
         Node.umax = max(u_lst)
 
 
+    def getMinMaxValues(attr):
+        if attr == 'u_1':
+            return Node.u1min, Node.u1max
+        elif attr == 'u_2':
+            return Node.u2min, Node.u2max
+        elif attr == 'u':
+            return 0, Node.umax
+        else:
+            return 0, 0
+        
     def nodesToVec(property):
         return np.concatenate([getattr(Node.nodes[i], property) for i in Node.nodes.keys()])
     
@@ -36,6 +47,7 @@ class Node():
         self.loads = np.zeros(2)
         self.BCs = np.full(2, np.nan)
         Node.nodes[self.id] = self
+        self.initialLoads = np.zeros(2) #TODO register initial loads after parsing
 
         self.deformed_coordinates = self.coordinates
         self.u1u2 = np.zeros(2)

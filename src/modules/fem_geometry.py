@@ -13,5 +13,3 @@ def get_angle(u, v):
 
 def get_angle_from_horizontal(v):
     return np.arctan2(v[1], v[0])
-
-

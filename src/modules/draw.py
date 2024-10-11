@@ -7,15 +7,23 @@ from matplotlib.backends.backend_tkagg import (
 import matplotlib as mpl
 
 
-def draw_el(element, ax, colormap=True, attr='u', number=True): # TODO test
+
+
+def draw_el(element, 
+            artist, 
+            colormap=True, 
+            attr='u', 
+            number=True): # TODO test
+        
         '''Draws the element.'''
 
+        ax = artist.ax
         # Draw the element number
         centroid = np.mean([node.coordinates for node in element.nodes.values()], axis=0)
         if number:
-            circle = plt.Circle((centroid[0], centroid[1]), radius=6, color='white', fill=True, alpha=0.8, lw=3) #TODO zorder (was 9)
+            circle = plt.Circle((centroid[0], centroid[1]), radius=artist.normal_size/20, color='white', fill=True, alpha=0.8, lw=3, zorder=9) #TODO zorder (was 9)
             ax.add_patch(circle)
-            ax.text(centroid[0], centroid[1], str(element.id), color='blue', fontsize=8, ha='center', va='center') #TODO ZORDER (was 10)
+            ax.text(centroid[0], centroid[1], str(element.id), color='blue', fontsize=8, ha='center', va='center', zorder=10) #TODO ZORDER (was 10)
             
 
 
@@ -23,34 +31,34 @@ def draw_el(element, ax, colormap=True, attr='u', number=True): # TODO test
             us, points = element.interpolate_u()
             if attr=='u_1':
                 us = np.array([u[0] for u in us])
-                vmin = Node.u1min
-                vmax = Node.u1max
+                vmin, vmax = Node.getMinMaxValues('u_1')
             elif attr=='u_2':
                 us = np.array([u[1] for u in us])
-                vmin = Node.u2min
-                vmax = Node.u2max
+                vmin, vmax = Node.getMinMaxValues('u_2')
             elif attr=='strain':
                 us = np.array([element.strain for u in us])
-                vmin = Element.strainmin
-                vmax = Element.strainmax
+                vmin, vmax = Element.getMinMaxValues('strain')
             elif attr=='stress':
                 us = np.array([element.stress for u in us])
-                vmin = Element.stressmin
-                vmax = Element.stressmax
+                vmin, vmax = Element.getMinMaxValues('stress')
             elif attr=='u':
                 us = np.array([np.linalg.norm(u) for u in us])
-                vmin = 0
-                vmax = Node.umax
-            scatter = ax.scatter(points[:,0], points[:, 1], c=us, cmap='gist_rainbow', vmin=vmin, vmax=vmax, s=5, zorder=3) 
+                vmin, vmax = Node.getMinMaxValues('u')
 
-            return vmin, vmax
+            scatter = ax.scatter(points[:,0], points[:, 1], c=us, cmap='gist_rainbow', vmin=vmin, vmax=vmax, s=artist.normal_size/25, zorder=3) 
+        for node in element.nodes.values():
+            print(f"Coordinates: {node.coordinates}")
         else:
             ax.plot([element.nodes[1].coordinates[0], element.nodes[2].coordinates[0]], 
                     [element.nodes[1].coordinates[1], element.nodes[2].coordinates[1]], 'k-')
-            return None, None
 
 
-def draw_colorbar(artist, vmin, vmax):
+def draw_colorbar(artist, 
+                  vmin, 
+                  vmax,
+                  name):
+        
+        '''Draws the colorbar.'''
         fig = artist.fig
         ax = artist.ax
  
@@ -61,84 +69,125 @@ def draw_colorbar(artist, vmin, vmax):
         # Create the colorbar
         colorbar = fig.colorbar(sm, ax=ax)
 
+        colorbar.set_label(name)
+
 def draw_constraints(node, artist):
     fig, ax = artist.fig, artist.ax
+    tri_height = artist.normal_size/15
       # Draw constraints
     if not np.isnan(node.BCs[0]):  # constraint in x direction
         triangle = plt.Polygon([
             [node.coordinates[0], node.coordinates[1]], 
-            [node.coordinates[0] + 10, node.coordinates[1] + 5], 
-            [node.coordinates[0] + 10, node.coordinates[1] - 5]
+            [node.coordinates[0] + tri_height, node.coordinates[1] + tri_height/2], 
+            [node.coordinates[0] + tri_height, node.coordinates[1] - tri_height/2]
         ], closed=True, color='g')
         ax.add_patch(triangle)
 
     if not np.isnan(node.BCs[1]):  # constraint in y direction
         triangle = plt.Polygon([
             [node.coordinates[0], node.coordinates[1]], 
-            [node.coordinates[0] + 5, node.coordinates[1] - 10], 
-            [node.coordinates[0] - 5, node.coordinates[1] - 10]
+            [node.coordinates[0] + tri_height/2, node.coordinates[1] - tri_height], 
+            [node.coordinates[0] - tri_height/2, node.coordinates[1] - tri_height]
         ], closed=True, color='g')
         ax.add_patch(triangle)
 
-def draw_forces(node, artist, scale=1):
-    fig, ax = artist.fig, artist.ax
-    scale = scale/100
+def draw_forces(node, 
+                artist, 
+                scale=1/100):
+    
+    '''Draws forces in red, support reactions in green and given external loads in blueviolet.'''
+    try:
+        scale = float(scale)
+    except ValueError:
+        scale = 1e-2
+
+    ax = artist.ax
+    scale = scale
+    color = 'r'
     if node.loads[0] != 0:
-        ax.arrow(node.coordinates[0], node.coordinates[1], node.loads[0]*scale, 0, head_width=5, head_length=5, fc='r', ec='r')
+        if node.BCs[0] != np.nan: color = 'g'
+        if node.initialLoads[0] != 0: color = 'blueviolet'
+        ax.arrow(node.coordinates[0], node.coordinates[1], node.loads[0]*scale, 0, head_width=5, head_length=5, fc=color, ec=color, zorder=7)
     if node.loads[1] != 0:
-        ax.arrow(node.coordinates[0], node.coordinates[1], 0, node.loads[1]*scale, head_width=5, head_length=5, fc='r', ec='r')
+        if node.BCs[1] != np.nan: color = 'g'
+        if node.initialLoads[1] != 0: color = 'blueviolet'
+        ax.arrow(node.coordinates[0], node.coordinates[1], 0, node.loads[1]*scale, head_width=5, head_length=5, fc=color, ec=color, zorder=7)
 
 
-def draw_node(node, artist, forces, constraints):
-    fig, ax = artist.fig, artist.ax
-    ax.plot(node.coordinates[0], node.coordinates[1], 'bo', zorder=8)  # blue dot for the node
+def draw_node(node, 
+              artist, 
+              forces, 
+              constraints, 
+              forces_scale):
+    
+    '''Draws the node.'''
+    ax = artist.ax
+    ax.plot(node.coordinates[0], node.coordinates[1], 'bo' ,zorder=8)  # blue dot for the node
     if forces:
-        draw_forces(node, artist)
+        draw_forces(node, artist=artist, scale=forces_scale)
     if constraints:
         draw_constraints(node, artist)
      
-def draw_structure(artist, plot=True, forces=True, forces_scale=1, constraints=True, colors=False, element_numbers=False, deformed=False, deformation_scale=1e6): #TODO: TEST
+def draw_structure(artist, 
+                   forces=True, 
+                   forces_scale=1, 
+                   constraints=True, 
+                   colors=False, 
+                   element_numbers=False, 
+                   nodes=True, 
+                   elements=True,
+                   deformed=None): #TODO: TEST
         
     ax = artist.ax
     
-    if deformed: 
-        Node.ToggleDeformation(scale=deformation_scale)
-    for element in Element.elements.values():
-        vmin, vmax = draw_el(element, ax, colormap=colors, attr=colors, number=element_numbers)
-    if colors:
-            draw_colorbar(artist, vmin, vmax)
+    if elements:
+        for element in Element.elements.values():
+            draw_el(element, artist, colormap=(colors!="black"), attr=colors, number=element_numbers)
+    if colors!="black":
+            vmin, vmax = Element.getMinMaxValues(colors)
+            if vmin==vmax:
+                vmin, vmax = Node.getMinMaxValues(colors)
+            if deformed == None:
+                name = colors
+            elif deformed:
+                name = 'Deformed ' + colors
+            else:
+                name = 'Undeformed ' + colors
+            draw_colorbar(artist, vmin, vmax, name)
+    if nodes:
+        for node in Node.nodes.values():
+            draw_node(node, artist=artist, forces=forces, constraints=constraints, forces_scale=forces_scale)
 
+    artist.ax.set_aspect('equal')
+    #artist.canvas.draw()
+    return artist.ax
 
-
-    for node in Node.nodes.values():
-        ax.plot(node.coordinates[0], node.coordinates[1], 'bo')  # blue dot for the node
-
-        if forces:
-            draw_forces(node, artist, forces_scale)
-        if constraints: 
-           draw_constraints(node, artist)
-
-        
-    
-    
-    ax.set_aspect('equal')
-    if plot:    
-        plt.show()
-
-    if deformed:
-        Node.ToggleDeformation(scale=1/deformation_scale)
 
 class Artist():
-    def __init__(self, fig, ax, master):
-        Element.getMaxMinValues() 
-        Node.getMaxMinValues() 
+    normal_size = Element.avg_el_len()
+
+    def __init__(self, fig, master):
+        Element.setMaxMinValues() 
+        Node.setMaxMinValues() 
         self.fig = fig
-        self.ax = ax
+        self.config_grid(new=True)
         self.canvas = FigureCanvasTkAgg(self.fig, master=master)
         self.canvas.get_tk_widget().pack(side="right", fill="both", expand=True, padx=10, pady=10)
-        self.canvas.draw()
+        #self.canvas.draw()
         self.toolbar = NavigationToolbar2Tk(self.canvas, master, pack_toolbar=False)
         self.toolbar.update
+        
+
+    def reset_figure(self):
+        # Create a new figure and axis
+        self.fig.clf()
+        self.config_grid(new=True)
+
+    def config_grid(self, new=False):
+
+        if new:
+            self.ax = self.fig.add_subplot(111)
+
         # Set the background grid
         self.ax.grid(True, which='both', color='lightgray', linestyle='-', linewidth=0.5)
 
@@ -154,29 +203,64 @@ class Artist():
         self.ax.xaxis.label.set_color('darkgray')
         self.ax.title.set_color('darkgray')
 
-       
-    def center_view(self):
-        all_x_coords = []
-        all_y_coords = []
 
-        for element in Element.elements.values():
-            for node in element.nodes.values():
-                all_x_coords.append(node.coordinates[0])
-                all_y_coords.append(node.coordinates[1])
+    def update_plot(self, 
+                    draw_forces, 
+                    forces_scale,   
+                    draw_constraints,                   
+                    deformed_colors,
+                    undeformed_colors,
+                    draw_nodes, 
+                    draw_elements, 
+                    element_numbers,
+                    deformation_scale, 
+                    draw_undeformed, 
+                    draw_deformed):
+        try:
+            scale = float(deformation_scale)
+        except ValueError:
+            scale = 1e6
 
-        for node in Node.nodes.values():
-            all_x_coords.append(node.coordinates[0])
-            all_y_coords.append(node.coordinates[1])
-
-        if all_x_coords and all_y_coords:
-            min_x, max_x = min(all_x_coords), max(all_x_coords)
-            min_y, max_y = min(all_y_coords), max(all_y_coords)
-
-            self.ax.set_xlim(min_x - 10, max_x + 10)
-            self.ax.set_ylim(min_y - 10, max_y + 10)
-            self.canvas.draw()
-        self.ax.set_aspect('equal') # BUG this may cause it to be off center
+        #### CLEAR EVERYTHING
+        self.reset_figure()
         
+        # Remove existing colorbars
+        for cbar in self.fig.axes[1:]:
+            self.fig.delaxes(cbar)
+
+
+
+        if draw_deformed:
+            Node.ToggleDeformation(scale=scale)
+        if draw_undeformed:
+            self.ax = draw_structure(artist=self, 
+                           forces=draw_forces, 
+                           forces_scale=forces_scale, 
+                           constraints=draw_constraints, 
+                           colors=undeformed_colors, 
+                           element_numbers=element_numbers, 
+                           nodes=draw_nodes, 
+                           elements=draw_elements,
+                           deformed=False)
+            self.canvas.draw()
+        if draw_deformed:
+            self.ax = draw_structure(artist=self, 
+                           forces=draw_forces, 
+                           forces_scale=forces_scale, 
+                           constraints=draw_constraints, 
+                           colors=deformed_colors, 
+                           element_numbers=element_numbers, 
+                           nodes=draw_nodes, 
+                           elements=draw_elements,
+                           deformed=True)
+            #self.canvas.draw()
+        if draw_deformed:
+            Node.ToggleDeformation()
+
+
+        #self.ax.set_aspect('equal')
+        #self.canvas.draw() # TODO is this it?
+
 
     def getLastZ(self):
         highest_zorder = max([drawing.zorder for drawing in plt.gca().get_children()])
