@@ -1,18 +1,37 @@
-import numpy as np
 from solver import InputFile, buildGlobalK, constrainGlobalK, solve_disp, solveForces
-import time
-import src.modules.draw as draw
-from src.objects.node import Node
-import os
 import tempfile
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from results import Results
+
+# TODO add units textbox, also add to result writer
+
+
+class Checkbox(ttk.Checkbutton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.variable = tk.BooleanVar(self)
+        self.config(variable=self.variable)
+
+    def checked(self):
+        return self.variable.get()
+
+    def check(self):
+        self.variable.set(True)
+
+    def uncheck(self):
+        self.variable.set(False)
+
+    
+    def checkbox_clicked(self):
+        print("New state:", self.checked())
 
 
 # Function to open file dialog and load file content
 def open_file(text_box):
-    file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+    file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")]) #FIXME add to allow for .inp
     if file_path:
         with open(file_path, 'r') as file:
             content = file.read()
@@ -37,14 +56,17 @@ def run_and_create_temp_file(text_box, download_button):
     fff = solveForces(k,uuu)
 
     download_button.config(state=tk.NORMAL)
-    
 
-def download_results_file(): #TODO
-    pass
+    Results.build_results_string(k)
+
+    # Update the text box with the results
+    text_box.delete(1.0, tk.END)  # Clear text box before loading new content
+    text_box.insert(tk.END, Results.results_string)
 
 
-
-'''draw.draw_structure(ax=ax, plot=True, drawForces=True, drawConstraints=True, colors=True)
-    Node.ToggleDeformation(scale=1000000)
-    draw.draw_structure(ax=ax, drawForces=False, drawConstraints=False, colors='u')
-    canvas.draw()'''
+def download_results_file(results_text):
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt", filetypes=[("Text Files", "*.txt"), ("All Files", "*.*")])
+    if file_path:
+        with open(file_path, 'w') as file:
+            file.write(results_text)
+        messagebox.showinfo("Results file Saved", f"Results saved to: {file_path}")

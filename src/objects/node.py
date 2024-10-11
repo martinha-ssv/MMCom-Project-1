@@ -6,7 +6,7 @@ class Node():
     nodes = {}
     Nsets = {}
 
-    def getMaxValues():
+    def getMaxMinValues():
         u1_lst = [node.u1u2[0] for node in Node.nodes.values()]
         Node.u1max = max(u1_lst)
         Node.u1min = min(u1_lst)
@@ -26,7 +26,7 @@ class Node():
         for i, node_id in enumerate(Node.nodes.keys()):
             setattr(Node.nodes[node_id], property, vec[2*i:2*i+2])
 
-    def ToggleDeformation(scale=1):
+    def ToggleDeformation(scale=1e6):
         for node in Node.nodes.values():
             node.toggleNodeDeformation(scale)
 
@@ -42,7 +42,7 @@ class Node():
 
         self.lastScale = 1
 
-    def toggleNodeDeformation(self, scale=1):
+    def toggleNodeDeformation(self, scale):
         if self.lastScale == 1:
             self.coordinates = self.coordinates + scale*self.u1u2
             self.lastScale = scale

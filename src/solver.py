@@ -1,8 +1,9 @@
-from src.modules import parser as p
-from src.modules.file_input import InputFile
-from src.objects.node import Node
-from src.objects.element import Element
-#from src.modules import draw
+from modules import parser as p
+from modules.file_input import InputFile
+from objects.node import Node
+from objects.element import Element
+from modules.draw import Artist
+import modules.draw as draw
 from pprint import pprint
 import numpy as np
 import copy
@@ -69,10 +70,11 @@ const_k, f_vec = constrainGlobalK(k)
 uuu = solve_disp(const_k, f_vec)
 fff = solveForces(k,uuu)
 
+#fig, ax = plt.subplots()
 
 
 # BUG the bug on the interface is because we can't genereate matplotlib figs outside canvases in the tk window I THINK
+'''artist = Artist(fig, ax, canvas= None, master=None)
+draw.draw_structure(artist, plot=False, forces=False, constraints=True, colors=False, element_numbers=False, deformed=False)
+draw.draw_structure(artist, forces=False, constraints=False, colors='stress', element_numbers=False, deformed=True)'''
 
-
-#Node.ToggleDeformation(scale=1000000)
-#draw.draw_structure(ax, drawForces=False, drawConstraints=False, colors='u')

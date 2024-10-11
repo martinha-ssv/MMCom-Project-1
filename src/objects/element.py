@@ -1,7 +1,7 @@
 import numpy as np
 from math import cos as c, sin as s
-from .node import Node
-from ..modules import fem_geometry as f_geom
+from objects.node import Node
+from modules import fem_geometry as f_geom
 
 
 class Element():
@@ -10,7 +10,7 @@ class Element():
     E_young = 0
     v_poisson = 0
 
-    def getMaxValues():
+    def getMaxMinValues():
         '''Returns the maximum values for the strain and stress.'''
         strains_lst = [element.getStrain() for element in Element.elements.values()]
         Element.strainmax = max(strains_lst)

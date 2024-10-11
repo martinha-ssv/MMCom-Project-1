@@ -11,20 +11,29 @@
 #   -> if there was a boundary condition on this axis, the force is a reaction force. State it, identifying the node ID, the axis, and the value
 # - Global stiffness matrix
 import numpy as np
-from src.objects.node import Node
-from src.objects.element import Element
+from objects.node import Node
+from objects.element import Element
 from tabulate import tabulate
-from reportlab.lib.pagesizes import A4
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
 
 
-def build_results_string(k):
+class Results():
+    '''Class to handle the results of the analysis.'''
+    results_string = ''
+
+    @staticmethod
+    def write_report_txt(fname='report1.txt'):
+        '''Writes a report with the results of the analysis.'''
+
+        with open(fname, 'w') as f:
+            results_str = Results.build_results_string()
+            f.write(results_str)
+        print(f'Report written to {fname}')
+
+
+    def build_results_string(k):
         '''Builds the results string for the report.'''
         results = []
-        results.append('Results of the analysis\n\n')
+        results.append('FEA Analysis Results\n\n')
         
         # Displacements
         results.append('Displacements\n')
@@ -62,19 +71,15 @@ def build_results_string(k):
         
         # Global stiffness matrix
         results.append('Global stiffness matrix\n')
-        results.append(tabulate(k, tablefmt='rounded_grid'))
+        formatted_k = [[f"{value:.3e}" for value in row] for row in k]
+        results.append(tabulate(formatted_k, tablefmt='rounded_grid'))
         results.append('\n\n')
         
         results.append('End of report')
 
-        return ''.join(results)
+        Results.results_string = ''.join(results)
+
+        return Results.results_string
 
 
 
-def write_report_txt(fname='report1.txt'):
-    '''Writes a report with the results of the analysis.'''
-
-    with open(fname, 'w') as f:
-        results_str = build_results_string()
-        f.write(results_str)
-    print(f'Report written to {fname}')

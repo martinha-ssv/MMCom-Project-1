@@ -1,6 +1,6 @@
-from src.modules import parser
-from src.objects.node import Node
-from src.objects.element import Element
+from modules import parser
+from objects.node import Node
+from objects.element import Element
 import numpy as np
 
 class InputFile():
@@ -114,12 +114,16 @@ class InputFile():
             set = BC_txt[0]
             for node in Node.Nsets[set]:
                     print('Lookinf at node:', node.id)
-                    for axis in range(int(BC_txt[1]), int(BC_txt[2])+1):
-                        i = parser.RealToPy_ind(axis)
-                        if len(BC_txt) == 4:
-                            node.BCs[i] = float(BC_txt[3])
-                        else:
-                            node.BCs[i] = 0
+                    try:
+                        for axis in range(int(BC_txt[1]), int(BC_txt[2])+1):
+                            i = parser.RealToPy_ind(axis)
+                            if len(BC_txt) == 4:
+                                node.BCs[i] = float(BC_txt[3])
+                            else:
+                                node.BCs[i] = 0
+                    except ValueError as e:
+                        for axis in range(2):  # Assuming 'ENCASTRE' means both axes
+                            node.BCs[axis] = 0
 
     def getMaterialText(self):
         content = parser.cleanLine(self.headings_content['Elastic'][0][0])
