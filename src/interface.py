@@ -77,7 +77,7 @@ class Interface:
         self.scale_label.pack(anchor=tk.W, padx=20, pady=5)
 
         self.scale_entry = ttk.Entry(self.sidebar_frame, width=10)
-        self.scale_entry.insert(0, '1e6')
+        self.scale_entry.insert(0, '1e2')
         self.scale_entry.pack(anchor=tk.W, padx=40, pady=5)
 
         # FORCES SCALE ENTRY
@@ -85,7 +85,7 @@ class Interface:
         self.forces_scale_label.pack(anchor=tk.W, padx=20, pady=5)
 
         self.forces_scale_entry = ttk.Entry(self.sidebar_frame, width=10)
-        self.forces_scale_entry.insert(0, '1e-2')
+        self.forces_scale_entry.insert(0, '1e-4')
         self.forces_scale_entry.pack(anchor=tk.W, padx=40, pady=5)  # Increased padx to push the Entry to the right
 
         # DRAW OPTIONS

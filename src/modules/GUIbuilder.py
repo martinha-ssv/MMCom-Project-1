@@ -6,6 +6,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from results import Results
 import matplotlib.pyplot as plt
 from modules.file_input import clear_pycache
+from objects.node import Node
+from objects.element import Element
 
 # TODO add units textbox, also add to result writer
 
@@ -35,6 +37,8 @@ class Checkbox(ttk.Checkbutton):
 # Function to open file dialog and load file content
 def open_file(text_box):
     clear_pycache()
+    Element.elements = {}
+    Node.nodes = {}
     file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("Input Files", "*.inp"), ("All Files", "*.*")])
     if file_path:
         with open(file_path, 'r') as file:

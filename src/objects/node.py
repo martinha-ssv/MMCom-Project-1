@@ -30,6 +30,8 @@ class Node():
         else:
             return 0, 0
         
+    def hasBC(self, axis):
+        return not np.isnan(self.BCs[axis-1])
     def nodesToVec(property):
         return np.concatenate([getattr(Node.nodes[i], property) for i in Node.nodes.keys()])
     

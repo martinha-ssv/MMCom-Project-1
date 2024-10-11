@@ -10,47 +10,45 @@ import matplotlib as mpl
 
 
 def draw_el(element, 
-            artist, 
-            colormap=True, 
-            attr='u', 
+            artist,
+            color='u', 
             number=True): # TODO test
         
         '''Draws the element.'''
 
         ax = artist.ax
+        unit = artist.points_to_du(4)[0]
+
         # Draw the element number
         centroid = np.mean([node.coordinates for node in element.nodes.values()], axis=0)
         if number:
-            circle = plt.Circle((centroid[0], centroid[1]), radius=artist.normal_size/20, color='white', fill=True, alpha=0.8, lw=3, zorder=9) #TODO zorder (was 9)
+            circle = plt.Circle((centroid[0], centroid[1]), radius=0.01, color='white', fill=True, alpha=0.8, lw=3, zorder=9) #TODO zorder (was 9)
             ax.add_patch(circle)
             ax.text(centroid[0], centroid[1], str(element.id), color='blue', fontsize=8, ha='center', va='center', zorder=10) #TODO ZORDER (was 10)
-            
-
-
-        if colormap:
-            us, points = element.interpolate_u()
-            if attr=='u_1':
-                us = np.array([u[0] for u in us])
-                vmin, vmax = Node.getMinMaxValues('u_1')
-            elif attr=='u_2':
-                us = np.array([u[1] for u in us])
-                vmin, vmax = Node.getMinMaxValues('u_2')
-            elif attr=='strain':
-                us = np.array([element.strain for u in us])
-                vmin, vmax = Element.getMinMaxValues('strain')
-            elif attr=='stress':
-                us = np.array([element.stress for u in us])
-                vmin, vmax = Element.getMinMaxValues('stress')
-            elif attr=='u':
-                us = np.array([np.linalg.norm(u) for u in us])
-                vmin, vmax = Node.getMinMaxValues('u')
-
-            scatter = ax.scatter(points[:,0], points[:, 1], c=us, cmap='gist_rainbow', vmin=vmin, vmax=vmax, s=artist.normal_size/25, zorder=3) 
-        for node in element.nodes.values():
-            print(f"Coordinates: {node.coordinates}")
-        else:
+        
+        us, points = element.interpolate_u()
+        if color=='u_1':
+            us = np.array([u[0] for u in us])
+            vmin, vmax = Node.getMinMaxValues('u_1')
+        elif color=='u_2':
+            us = np.array([u[1] for u in us])
+            vmin, vmax = Node.getMinMaxValues('u_2')
+        elif color=='strain':
+            us = np.array([element.strain for u in us])
+            vmin, vmax = Element.getMinMaxValues('strain')
+        elif color=='stress':
+            us = np.array([element.stress for u in us])
+            vmin, vmax = Element.getMinMaxValues('stress')
+        elif color=='u':
+            us = np.array([np.linalg.norm(u) for u in us])
+            vmin, vmax = Node.getMinMaxValues('u')
+        
+        if color!='black':
+            ax.scatter(points[:,0], points[:, 1], c=us, cmap='gist_rainbow', vmin=vmin, vmax=vmax, s=unit, zorder=3) 
+        
+        if color=='black':
             ax.plot([element.nodes[1].coordinates[0], element.nodes[2].coordinates[0]], 
-                    [element.nodes[1].coordinates[1], element.nodes[2].coordinates[1]], 'k-')
+                [element.nodes[1].coordinates[1], element.nodes[2].coordinates[1]], 'k-', lw=2)
 
 
 def draw_colorbar(artist, 
@@ -73,9 +71,9 @@ def draw_colorbar(artist,
 
 def draw_constraints(node, artist):
     fig, ax = artist.fig, artist.ax
-    tri_height = artist.normal_size/15
+    tri_height = artist.points_to_du(10)[0]
       # Draw constraints
-    if not np.isnan(node.BCs[0]):  # constraint in x direction
+    if node.hasBC(1):  # constraint in x direction
         triangle = plt.Polygon([
             [node.coordinates[0], node.coordinates[1]], 
             [node.coordinates[0] + tri_height, node.coordinates[1] + tri_height/2], 
@@ -83,7 +81,7 @@ def draw_constraints(node, artist):
         ], closed=True, color='g')
         ax.add_patch(triangle)
 
-    if not np.isnan(node.BCs[1]):  # constraint in y direction
+    if node.hasBC(2):  # constraint in y direction
         triangle = plt.Polygon([
             [node.coordinates[0], node.coordinates[1]], 
             [node.coordinates[0] + tri_height/2, node.coordinates[1] - tri_height], 
@@ -93,25 +91,25 @@ def draw_constraints(node, artist):
 
 def draw_forces(node, 
                 artist, 
-                scale=1/100):
+                scale=5e-3):
     
     '''Draws forces in red, support reactions in green and given external loads in blueviolet.'''
     try:
         scale = float(scale)
     except ValueError:
-        scale = 1e-2
+        scale = 5e-3
 
     ax = artist.ax
     scale = scale
     color = 'r'
+    unit = artist.points_to_du(5)[0]
+
     if node.loads[0] != 0:
-        if node.BCs[0] != np.nan: color = 'g'
-        if node.initialLoads[0] != 0: color = 'blueviolet'
-        ax.arrow(node.coordinates[0], node.coordinates[1], node.loads[0]*scale, 0, head_width=5, head_length=5, fc=color, ec=color, zorder=7)
+        if node.hasBC(1): color = 'limegreen'
+        ax.arrow(node.coordinates[0], node.coordinates[1], node.loads[0]*unit*scale, 0, head_width=unit, head_length=unit, fc=color, ec=color, zorder=10)
     if node.loads[1] != 0:
-        if node.BCs[1] != np.nan: color = 'g'
-        if node.initialLoads[1] != 0: color = 'blueviolet'
-        ax.arrow(node.coordinates[0], node.coordinates[1], 0, node.loads[1]*scale, head_width=5, head_length=5, fc=color, ec=color, zorder=7)
+        if node.hasBC(2): color = 'limegreen'
+        ax.arrow(node.coordinates[0], node.coordinates[1], 0, node.loads[1]*unit*scale, head_width=unit, head_length=unit, fc=color, ec=color, zorder=10)
 
 
 def draw_node(node, 
@@ -122,7 +120,7 @@ def draw_node(node,
     
     '''Draws the node.'''
     ax = artist.ax
-    ax.plot(node.coordinates[0], node.coordinates[1], 'bo' ,zorder=8)  # blue dot for the node
+    ax.plot(node.coordinates[0], node.coordinates[1], 'bo', zorder=8, markersize=3)  # blue dot for the node
     if forces:
         draw_forces(node, artist=artist, scale=forces_scale)
     if constraints:
@@ -142,7 +140,7 @@ def draw_structure(artist,
     
     if elements:
         for element in Element.elements.values():
-            draw_el(element, artist, colormap=(colors!="black"), attr=colors, number=element_numbers)
+            draw_el(element, artist, color=colors, number=element_numbers)
     if colors!="black":
             vmin, vmax = Element.getMinMaxValues(colors)
             if vmin==vmax:
@@ -159,7 +157,6 @@ def draw_structure(artist,
             draw_node(node, artist=artist, forces=forces, constraints=constraints, forces_scale=forces_scale)
 
     artist.ax.set_aspect('equal')
-    #artist.canvas.draw()
     return artist.ax
 
 
@@ -230,8 +227,7 @@ class Artist():
 
 
 
-        if draw_deformed:
-            Node.ToggleDeformation(scale=scale)
+            
         if draw_undeformed:
             self.ax = draw_structure(artist=self, 
                            forces=draw_forces, 
@@ -243,7 +239,9 @@ class Artist():
                            elements=draw_elements,
                            deformed=False)
             self.canvas.draw()
+
         if draw_deformed:
+            Node.ToggleDeformation(scale=scale)
             self.ax = draw_structure(artist=self, 
                            forces=draw_forces, 
                            forces_scale=forces_scale, 
@@ -253,14 +251,36 @@ class Artist():
                            nodes=draw_nodes, 
                            elements=draw_elements,
                            deformed=True)
-            #self.canvas.draw()
-        if draw_deformed:
+            self.canvas.draw()
             Node.ToggleDeformation()
 
+     # Function to convert size in points to data units
+    def points_to_du(self, size_in_points):
+        # Get the figure DPI (dots per inch)
+        dpi = self.fig.get_dpi()
+        
+        # Convert points to inches (1 point = 1/72 inch)
+        size_in_inches = size_in_points / 72
+        
+        # Get the axis limits and axis size in inches
+        xlim = self.ax.get_xlim()
+        ylim = self.ax.get_ylim()
+        
+        axis_width_in_data_units = xlim[1] - xlim[0]
+        axis_height_in_data_units = ylim[1] - ylim[0]
 
-        #self.ax.set_aspect('equal')
-        #self.canvas.draw() # TODO is this it?
+        # Get figure size in inches (width and height in inches)
+        fig_width_in_inches, fig_height_in_inches = self.fig.get_size_inches()
 
+        # Calculate how much data units correspond to one inch (for both x and y axes)
+        x_data_per_inch = axis_width_in_data_units / fig_width_in_inches
+        y_data_per_inch = axis_height_in_data_units / fig_height_in_inches
+
+        # Convert size from inches to data units
+        width_in_data_units = size_in_inches * x_data_per_inch
+        height_in_data_units = size_in_inches * y_data_per_inch
+
+        return width_in_data_units, height_in_data_units
 
     def getLastZ(self):
         highest_zorder = max([drawing.zorder for drawing in plt.gca().get_children()])
