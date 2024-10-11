@@ -10,16 +10,14 @@ Este projeto foi desenvolvido no âmbito da cadeira de Mecânica e Métodos de M
 
 2) Deverá ter uma pasta chamada 'projeto1' na diretória de onde correu o comando.
 
-![pasta na diretória](image.png)
-
 3) Entre na pasta, e navegue para a pasta `src`.
 
 `cd projeto1/src`
 
-    3.1. Se o próximo passo der erro, crie um venv:
+3.1. Se o próximo passo der erro, crie um venv:
 
-    `python3 -m venv .venv`
-    `source .venv/bin/activate`
+`python3 -m venv .venv`
+`source .venv/bin/activate`
 
 4) Instale os requisitos.
 
@@ -28,3 +26,7 @@ Este projeto foi desenvolvido no âmbito da cadeira de Mecânica e Métodos de M
 5) Corra o ficheiro `interface.py`
 
 `python interface.py`
+
+<img width="869" alt="image" src="https://github.com/user-attachments/assets/ae5a47c9-6d14-4598-a4e2-4d44476f9f98">
+<img width="864" alt="image" src="https://github.com/user-attachments/assets/853ef522-afff-46e7-a604-6c5a3fddfe7b">
+
